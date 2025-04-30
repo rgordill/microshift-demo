@@ -1,0 +1,17 @@
+---
+# This playbook is used to configure the builder host
+# It is assumed that the builder host is already created and running
+# The playbook will install the necessary packages and configure the host
+# to be used as a builder host for the Microshift ISO build
+- name: Playbook to configure builder host
+  hosts: builder
+  become: true
+  vars_files:
+    - vault.yml
+  vars:
+    ansible_user: cloud-user
+    ansible_ssh_private_key_file: "{{ ssh_public_key }}"
+  roles:
+    - role: activation
+    - role: builder_config
+    - role: builder_build

@@ -1,0 +1,40 @@
+---
+all:
+  vars:
+    gitops:
+      release: "1.12.1"
+      version: "1.12"
+    microshift:
+      release: "4.18.2"
+      arch: x86_64
+      version: "4.18"
+      os_version: "9.4"
+    vm:
+      builder:
+        name: builder
+        cloud_image: rhel-{{ microshift.os_version }}-{{ microshift.arch }}-kvm.qcow2
+        disk_size: 30G
+        network: default
+        ram_size: 4096
+        vcpu_count: 4
+        mac_address: 6c:92:cf:4b:50:91
+        os_variant: rhel9
+      edge:
+        name: microshift
+        iso: microshift-{{ microshift.release }}-{{ microshift.arch }}-installer.iso
+        disk_size: 20G
+        lvm_partition: 10G
+        network: default
+        ram_size: 4096
+        vcpu_count: 4
+        mac_address: 6c:92:cf:4b:50:92
+        os_variant: rhel9
+  children:
+    builder:
+      hosts:
+        builder:
+          ansible_host: 192.168.122.4
+          ansible_user: cloud-user
+          ansible_ssh_private_key_file: "{{ ssh_public_key }}"
+          ansible_ssh_common_args: '-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'
+

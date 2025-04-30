@@ -1,0 +1,13 @@
+# Tasks file for builder_build
+
+# These tasks build the microshift image
+# and the microshift installer iso
+
+- name: Compose the image
+  ansible.builtin.import_tasks: compose_image.yml
+
+- name: Compose the iso
+  ansible.builtin.import_tasks: compose_iso.yml
+
+- name: Add the kickstart file to the image
+  ansible.builtin.import_tasks: kickstart_iso.yml

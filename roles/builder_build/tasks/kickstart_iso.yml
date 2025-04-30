@@ -1,0 +1,13 @@
+- name: Instantiate the kickstart template into /tmp
+  ansible.builtin.template:
+    src: installer.ks.j2
+    dest: /tmp/installer.ks
+    mode: '0644'
+
+- name: Add kickstart to the installer iso with mkksiso
+  ansible.builtin.command:
+    cmd: >
+      mkksiso
+      --add /tmp/installer.ks
+      --output /tmp/microshift-{{ microshift.release }}-{{ microshift.arch }}-installer.iso
+      --input /tmp/{{ compose_iso_id }}-container.tar

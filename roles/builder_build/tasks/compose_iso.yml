@@ -1,0 +1,83 @@
+# These tasks compose the iso image using the composer-cli tool.
+- name: Install podman packages
+  ansible.builtin.dnf:
+    name:
+      - podman
+    state: present
+
+- name: Load tar container in podman
+  containers.podman.podman_load:
+    input: /tmp/{{ compose_container_id }}-container.tar
+  register: load_results
+
+- name: Extract image ID
+  ansible.builtin.set_fact:
+    image_id: "{{ (load_results.stdout | regex_search('Loaded image: sha256:([a-f0-9]+)', '\\1')) | first }}"
+
+# - name: Extract image ID
+#   set_fact:
+#     image_id: "21ba4d2e60f0910b31a3e26894ba7e6326d48fbbb438e8f079adf726aac3bcc1"
+
+- name: Tag the image
+  containers.podman.podman_tag:
+    image: "sha256:{{ image_id }}"
+    target_names:
+      - "microshift-container:latest"
+
+- name: Remove tar file
+  ansible.builtin.file:
+    path: "/tmp/{{ compose_container_id }}-container.tar"
+    state: absent
+
+- name: Create podman container
+  containers.podman.podman_container:
+    name: minimal-microshift-server
+    image: microshift-container:latest
+    state: started
+    detach: true
+    pull: never
+    ports:
+      - 8085:8080
+
+- name: Copy microshift installer to /tmp
+  ansible.builtin.copy:
+    src: "microshift-installer.toml"
+    dest: "/tmp/microshift-installer.toml"
+    mode: '0644'
+
+- name: Add microshift installer to composer-cli blueprints
+  ansible.builtin.command:
+    cmd: composer-cli blueprints push /tmp/microshift-installer.toml
+
+- name: Start composing the image
+  ansible.builtin.command:
+    cmd: >
+      composer-cli compose start-ostree
+        --url http://localhost:8085/repo/
+        --ref "rhel/{{ microshift.os_version }}/{{ microshift.arch }}/edge"
+        microshift-installer edge-installer
+  register: compose_iso_results
+
+- name: Extract compose ID
+  ansible.builtin.set_fact:
+    compose_iso_id: "{{ (compose_iso_results.stdout | regex_search('Compose ([a-f0-9-]+)', '\\1')) | first }}"
+
+# - name: Extract compose ID
+#   ansible.builtin.set_fact:
+#     compose_iso_id: "77bac0ce-57fb-4825-8947-0eb2eec0c1a2"
+
+- name: Wait for the image to be ready
+  ansible.builtin.command:
+    cmd: composer-cli compose status --json
+  register: compose_status
+  until: compose_status.stdout | from_json | json_query('[].body.finished[?id==`' ~ compose_iso_id | quote ~ '`]') != [[]]
+  retries: 60
+  delay: 30
+
+
+- name: Download the image in /tmp
+  ansible.builtin.command:
+    cmd: composer-cli compose image "{{ compose_iso_id }}"
+    chdir: /tmp
+  args:
+    creates: "/tmp/{{ compose_iso_id }}-installer.iso"

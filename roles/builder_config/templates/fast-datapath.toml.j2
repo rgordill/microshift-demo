@@ -1,0 +1,9 @@
+{% set os_major = microshift.os_version.split('.')[0] %}
+id = "fast-datapath"
+name = "Fast Datapath for RHEL {{ os_major }}"
+type = "yum-baseurl"
+url = "https://cdn.redhat.com/content/dist/layered/rhel{{ os_major }}/{{ microshift.arch }}/fast-datapath/os"
+check_gpg = true
+check_ssl = true
+system = false
+rhsm = true

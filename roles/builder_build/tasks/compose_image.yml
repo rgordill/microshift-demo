@@ -1,0 +1,31 @@
+# These tasks are used to build the image using the composer-cli tool.
+- name: Start composing the image
+  ansible.builtin.command:
+    cmd: >
+      composer-cli compose start-ostree
+      --ref "rhel/{{ microshift.os_version }}/{{ microshift.arch }}/edge"
+      "microshift-{{ microshift.release }}-{{ microshift.arch }}" edge-container
+  register: compose_container_results
+
+- name: Extract compose ID
+  ansible.builtin.set_fact:
+    compose_container_id: "{{ (compose_container_results.stdout | regex_search('Compose ([a-f0-9-]+)', '\\1')) | first }}"
+
+# - name: Extract compose ID
+#   ansible.builtin.set_fact:
+#     compose_container_id: "15ecaf4d-e55f-48cd-9cb0-fe1f9780b93f"
+
+- name: Wait for the image to be ready
+  ansible.builtin.command:
+    cmd: composer-cli compose status --json
+  register: compose_status
+  until: compose_status.stdout | from_json | json_query('[].body.finished[?id==`' ~ compose_container_id | quote ~ '`]') != [[]]
+  retries: 60
+  delay: 30
+
+- name: Download the image in /tmp
+  ansible.builtin.command:
+    cmd: composer-cli compose image "{{ compose_container_id }}"
+    chdir: /tmp
+  args:
+    creates: "/tmp/{{ compose_container_id }}-container.tar"

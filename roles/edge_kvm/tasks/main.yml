@@ -1,0 +1,26 @@
+---
+# tasks file for bastion-kvm
+
+- name: Create VMs
+  block:
+    - name: Check if the VM exists
+      community.libvirt.virt:
+        command: list_vms
+      register: vms_list
+
+    - name: Skip VM creation if it already exists
+      ansible.builtin.debug:
+        msg: "VM {{ vm.edge.name }} already exists. Skipping creation."
+      when: vm.edge.name in vms_list.list_vms
+
+    - name: Create VM if it does not exist
+      when: vm.edge.name not in vms_list.list_vms
+      block:
+        - name: Include disk image tasks
+          ansible.builtin.include_tasks: disk_image.yml
+
+        - name: Include cloud-init tasks
+          ansible.builtin.include_tasks: cloud_init.yml
+
+        - name: Include define and start tasks
+          ansible.builtin.include_tasks: define_and_start.yml

@@ -1,0 +1,14 @@
+- name: Create VM disk from rhel9
+  ansible.builtin.command: 
+    cmd: >
+      qemu-img create -F qcow2
+        /var/lib/libvirt/images/{{ vm.edge.name }}.img
+        {{ vm.edge.disk_size }}
+  args:
+    creates: /var/lib/libvirt/images/{{ vm.edge.name }}.img
+
+- name: Change permissions of VM disk
+  ansible.builtin.file:
+    path: /var/lib/libvirt/images/{{ vm.edge.name }}.img
+    mode: '0664'
+

@@ -1,0 +1,8 @@
+---
+# tasks file for activation
+
+- name: Register system and add subscription
+  community.general.redhat_subscription:
+    activationkey: "{{ org_activationkey }}"
+    org_id: "{{ org_id }}"
+    state: present

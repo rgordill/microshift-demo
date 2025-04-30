@@ -1,0 +1,43 @@
+---
+- name: Create temporary directory for cloud-init files
+  ansible.builtin.file:
+    path: "/tmp/{{ vm.builder.name }}"
+    state: directory
+    mode: '0755'
+    owner: qemu
+
+- name: Create cloud-init meta-data file
+  ansible.builtin.template:
+    src: cloud-init-meta-data.j2
+    dest: /tmp/{{ vm.builder.name }}/meta-data
+    mode: '0644'
+    owner: qemu
+    group: qemu
+
+- name: Create cloud-init user-data file
+  ansible.builtin.template:
+    src: cloud-init-user-data.j2
+    dest: /tmp/{{ vm.builder.name }}/user-data
+    mode: '0644'
+    owner: qemu
+    group: qemu
+
+- name: Create cloud-init ISO
+  ansible.builtin.command: >
+    genisoimage -output /var/lib/libvirt/images/{{ vm.builder.name }}-cidata.iso \
+                -volid cidata \
+                -joliet -rock \
+                /tmp/{{ vm.builder.name }}/meta-data \
+                /tmp/{{ vm.builder.name }}/user-data
+  args:
+    creates: /var/lib/libvirt/images/{{ vm.builder.name }}-cidata.iso
+
+- name: Change permissions of cloud-init ISO
+  ansible.builtin.file:
+    path: /var/lib/libvirt/images/{{ vm.builder.name }}-cidata.iso
+    mode: '0664'
+
+- name: Remove temporary directory for cloud-init files
+  ansible.builtin.file:
+    path: "/tmp/{{ vm.builder.name }}"
+    state: absent

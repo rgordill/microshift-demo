@@ -1,0 +1,9 @@
+{% set os_major = microshift.os_version.split('.')[0] %}
+id = "rhocp-{{ microshift.version }}"
+name = "Red Hat OpenShift Container Platform {{ microshift.version }} for RHEL {{ os_major }}"
+type = "yum-baseurl"
+url = "https://cdn.redhat.com/content/dist/layered/rhel{{ os_major }}/{{ microshift.arch }}/rhocp/{{ microshift.version }}/os"
+check_gpg = true
+check_ssl = true
+system = false
+rhsm = true

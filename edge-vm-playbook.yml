@@ -1,0 +1,9 @@
+---
+
+- name: Playbook to create the edge virtual machine
+  hosts: builder
+  become: true
+  vars_files:
+    - vault.yml
+  roles:
+    - role: edge_kvm

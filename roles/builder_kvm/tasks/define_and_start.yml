@@ -1,0 +1,12 @@
+---
+- name: Define the VM
+  community.libvirt.virt:
+    command: define
+    name: "{{ vm.builder.name }}"
+    xml: "{{ lookup('template', 'vm.xml.j2') }}"
+
+- name: Start the VM
+  community.libvirt.virt:
+    command: start
+    name: "{{ vm.builder.name }}"
+    state: running

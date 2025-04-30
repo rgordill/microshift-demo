@@ -1,0 +1,8 @@
+---
+- name: Playbook to create the builder virtual machine
+  hosts: localhost
+  become: true
+  vars_files:
+    - vault.yml
+  roles:
+    - role: builder_kvm

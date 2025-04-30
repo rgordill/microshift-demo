@@ -1,0 +1,15 @@
+- name: Template rhocp.toml and fast-datapath into /tmp
+  ansible.builtin.template:
+    src: "{{ item }}"
+    dest: "/tmp/{{ item | splitext | first }}"
+    mode: '0644'
+  loop:
+    - rhocp.toml.j2
+    - fast-datapath.toml.j2
+
+- name: Add those sources to osbuild using composer-cli
+  ansible.builtin.command:
+    cmd: composer-cli sources add /tmp/{{ item }}
+  loop:
+    - rhocp.toml
+    - fast-datapath.toml
