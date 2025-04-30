@@ -1,7 +1,7 @@
 ---
 
 - name: Playbook to create the edge virtual machine
-  hosts: builder
+  hosts: localhost
   become: true
   vars_files:
     - vault.yml

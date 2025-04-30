@@ -14,10 +14,6 @@
   ansible.builtin.set_fact:
     image_id: "{{ (load_results.stdout | regex_search('Loaded image: sha256:([a-f0-9]+)', '\\1')) | first }}"
 
-# - name: Extract image ID
-#   set_fact:
-#     image_id: "21ba4d2e60f0910b31a3e26894ba7e6326d48fbbb438e8f079adf726aac3bcc1"
-
 - name: Tag the image
   containers.podman.podman_tag:
     image: "sha256:{{ image_id }}"

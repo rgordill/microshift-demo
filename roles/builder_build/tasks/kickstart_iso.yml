@@ -1,13 +1,33 @@
+- name: Install required packages
+  ansible.builtin.dnf:
+    name:
+      - lorax
+    state: present
+
 - name: Instantiate the kickstart template into /tmp
   ansible.builtin.template:
     src: installer.ks.j2
     dest: /tmp/installer.ks
     mode: '0644'
 
+- name: Extract compose ID
+  ansible.builtin.set_fact:
+    compose_iso_id: "2f67b862-83e5-4c92-8201-65771a627a62"
+
 - name: Add kickstart to the installer iso with mkksiso
   ansible.builtin.command:
     cmd: >
       mkksiso
-      --add /tmp/installer.ks
-      --output /tmp/microshift-{{ microshift.release }}-{{ microshift.arch }}-installer.iso
-      --input /tmp/{{ compose_iso_id }}-container.tar
+        /tmp/installer.ks
+        /tmp/{{ compose_iso_id }}-installer.iso
+        /tmp/microshift-{{ microshift.release }}-{{ microshift.arch }}-installer.iso
+  args:
+    creates: /tmp/microshift-{{ microshift.release }}-{{ microshift.arch }}-installer.iso
+
+- name: Download the final iso to the controller
+  ansible.builtin.fetch:
+    src: /tmp/microshift-{{ microshift.release }}-{{ microshift.arch }}-installer.iso
+    dest: /tmp/microshift-{{ microshift.release }}-{{ microshift.arch }}-installer.iso
+    flat: true
+  become: false
+

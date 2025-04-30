@@ -19,8 +19,5 @@
         - name: Include disk image tasks
           ansible.builtin.include_tasks: disk_image.yml
 
-        - name: Include cloud-init tasks
-          ansible.builtin.include_tasks: cloud_init.yml
-
         - name: Include define and start tasks
           ansible.builtin.include_tasks: define_and_start.yml
