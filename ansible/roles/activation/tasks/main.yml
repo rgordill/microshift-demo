@@ -6,3 +6,9 @@
     activationkey: "{{ org_activationkey }}"
     org_id: "{{ org_id }}"
     state: present
+
+- name: Set subscription-manager release to os_version
+  community.general.redhat_subscription:
+    release: " {{ microshift.os_version }}"
+    state: present
+

@@ -1,0 +1,27 @@
+- name: Include osbuild_install.yml
+  ansible.builtin.include_tasks: osbuild_install.yml
+
+- name: Include osbuild_pull_secret.yml
+  ansible.builtin.include_tasks: osbuild_pull_secret.yml
+
+- name: Include gitops tasks if it is enabled
+  when: gitops.enabled | bool
+  block:
+    - name: Include osbuild_gitops_sources.yml
+      ansible.builtin.include_tasks: osbuild_gitops_sources.yml
+
+    - name: Include blueprint_add_gitops.yml
+      ansible.builtin.include_tasks: blueprint_add_gitops.yml
+
+- name: Include multus tasks if it is enabled
+  when: multus.enabled | bool
+  block:
+    # Add sources not needed, as it is in the same repo as microshift
+    - name: Include blueprint_add_multus.yml
+      ansible.builtin.include_tasks: blueprint_add_multus.yml
+
+- name: Include osbuild_microshift_sources.yml
+  ansible.builtin.include_tasks: osbuild_microshift_sources.yml
+
+- name: Include blueprint_create.yml
+  ansible.builtin.include_tasks: create_blueprint.yml

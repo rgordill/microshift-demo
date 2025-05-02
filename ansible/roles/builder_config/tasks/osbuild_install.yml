@@ -15,4 +15,4 @@
     state: started
   loop:
     - cockpit.socket
-    - osbuild-composer.service
+    - osbuild-composer.socket

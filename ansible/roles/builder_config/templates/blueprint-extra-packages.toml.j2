@@ -1,0 +1,8 @@
+{% for pkg in microshift.extra_packages %}
+[[packages]]
+name = "{{ pkg.name }}"
+{% if pkg.version is defined and pkg.version %}
+version = "{{ pkg.version }}"
+{% endif %}
+
+{% endfor %}

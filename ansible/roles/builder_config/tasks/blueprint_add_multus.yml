@@ -1,0 +1,27 @@
+- name: Install microshift-multus-release-info
+  ansible.builtin.dnf:
+    name: microshift-multus-release-info
+    state: present
+
+- name: Read release-multus.json from target host
+  ansible.builtin.slurp:
+    src: "/usr/share/microshift/release/release-multus-{{ microshift.arch }}.json"
+  register: multus_release_info_json
+
+- name: Set fact for release-multus.json
+  ansible.builtin.set_fact:
+    multus_release_info: "{{ multus_release_info_json['content'] | b64decode | from_json }}"
+
+- name: Create toml file from release-multus.json using blueprint-from-release-info.toml.j2
+  ansible.builtin.template:
+    src: blueprint-from-release-info.toml.j2
+    dest: /tmp/microshift-multus.toml
+    mode: '0644'
+  vars:
+    package_name: microshift-multus
+    release_info: "{{ multus_release_info }}"
+
+- name: Merge blueprint.toml and /tmp/blueprint.toml
+  ansible.builtin.shell:
+    cmd: "cat /tmp/microshift-multus.toml >> /tmp/merged-blueprint.toml"
+    creates: /tmp/merged-blueprint.toml

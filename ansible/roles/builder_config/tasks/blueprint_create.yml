@@ -1,0 +1,23 @@
+- name: Enable rhocp repo with rhsm_repository module
+  community.general.rhsm_repository:
+    name: "rhocp-{{ microshift.version }}-for-rhel-{{ microshift.os_version.split('.')[0] }}-{{ microshift.arch }}-rpms"
+    state: enabled
+
+- name: Install microshift-release-info
+  ansible.builtin.dnf:
+    name: microshift-release-info
+    state: present
+
+- name: Add blueprint.toml
+  ansible.builtin.shell:
+    cmd: "cat /usr/share/microshift/blueprint/blueprint-{{ microshift.arch }}.toml >> /tmp/merged-blueprint.toml"
+    creates: /tmp/merged-blueprint.toml
+
+- name: Push merged blueprint to osbuild
+  ansible.builtin.command:
+    cmd: "composer-cli blueprints push /tmp/merged-blueprint.toml"
+
+- name: Remove merged blueprint
+  ansible.builtin.file:
+    path: /tmp/merged-blueprint.toml
+    state: absent

@@ -1,9 +1,0 @@
-[[packages]]
-name = "microshift-gitops"
-version = "{{ (gitops_release_info.release.base | replace('v', '')) | split('-') | first }}"
-
-{% for key, value in gitops_release_info.images.items() %}
-[[containers]]
-source = "{{ value }}"
-
-{% endfor %}

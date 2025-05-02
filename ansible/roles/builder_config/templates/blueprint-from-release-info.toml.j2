@@ -1,0 +1,9 @@
+[[packages]]
+name = {{ package_name }}
+version = "{{ (release_info.release.base | replace('v', '')) | split('-') | first }}"
+
+{% for key, value in release_info.images.items() %}
+[[containers]]
+source = "{{ value }}"
+
+{% endfor %}
