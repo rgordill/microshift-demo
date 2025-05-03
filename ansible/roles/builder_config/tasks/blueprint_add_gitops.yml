@@ -20,13 +20,8 @@
 - name: Create toml file from release-gitops.json using blueprint-from-release-info.toml.j2
   ansible.builtin.template:
     src: blueprint-from-release-info.toml.j2
-    dest: /tmp/microshift-gitops.toml
+    dest: "{{ blueprint_fragments_path}}/microshift-gitops.toml"
     mode: '0644'
   vars:
     package_name: microshift-gitops
     release_info: "{{ gitops_release_info }}"
-
-- name: Merge blueprint.toml and /tmp/blueprint.toml
-  ansible.builtin.shell:
-    cmd: "cat /tmp/microshift-gitops.toml >> /tmp/merged-blueprint.toml"
-    creates: /tmp/merged-blueprint.toml

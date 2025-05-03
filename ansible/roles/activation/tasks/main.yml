@@ -11,4 +11,3 @@
   community.general.redhat_subscription:
     release: " {{ microshift.os_version }}"
     state: present
-

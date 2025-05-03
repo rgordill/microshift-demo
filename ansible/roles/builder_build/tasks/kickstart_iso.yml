@@ -10,9 +10,9 @@
     dest: /tmp/installer.ks
     mode: '0644'
 
-- name: Extract compose ID
-  ansible.builtin.set_fact:
-    compose_iso_id: "2f67b862-83e5-4c92-8201-65771a627a62"
+# - name: Extract compose ID
+#   ansible.builtin.set_fact:
+#     compose_iso_id: "2f67b862-83e5-4c92-8201-65771a627a62"
 
 - name: Add kickstart to the installer iso with mkksiso
   ansible.builtin.command:

@@ -1,0 +1,15 @@
+- name: Assemble blueprint fragments
+  ansible.builtin.assemble:
+    src: "{{ blueprint_fragments_path }}"
+    dest: /tmp/merged-blueprint.toml
+    delimiter: "\n"
+    mode: 0644
+
+- name: Push merged blueprint to osbuild
+  ansible.builtin.command:
+    cmd: "composer-cli blueprints push /tmp/merged-blueprint.toml"
+
+- name: Remove merged blueprint
+  ansible.builtin.file:
+    path: /tmp/merged-blueprint.toml
+    state: absent

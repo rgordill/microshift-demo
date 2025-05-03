@@ -1,11 +1,5 @@
 - name: Create toml for extra packages using template
   ansible.builtin.template:
     src: blueprint-extra-packages.toml.j2
-    dest: /tmp/microshift-extras.toml
+    dest: "{{ blueprint_fragments_path }}/microshift-extras.toml"
     mode: '0644'
-
-
-- name: Merge blueprint.toml and /tmp/blueprint.toml
-  ansible.builtin.shell:
-    cmd: "cat /tmp/microshift-extras.toml >> /tmp/merged-blueprint.toml"
-    creates: /tmp/merged-blueprint.toml

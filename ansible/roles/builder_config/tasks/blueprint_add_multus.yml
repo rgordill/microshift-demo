@@ -1,3 +1,8 @@
+- name: Enable rhocp repo with rhsm_repository module
+  community.general.rhsm_repository:
+    name: "rhocp-{{ microshift.version }}-for-rhel-{{ microshift.os_version.split('.')[0] }}-{{ microshift.arch }}-rpms"
+    state: enabled
+
 - name: Install microshift-multus-release-info
   ansible.builtin.dnf:
     name: microshift-multus-release-info
@@ -15,13 +20,8 @@
 - name: Create toml file from release-multus.json using blueprint-from-release-info.toml.j2
   ansible.builtin.template:
     src: blueprint-from-release-info.toml.j2
-    dest: /tmp/microshift-multus.toml
+    dest: "{{ blueprint_fragments_path }}/microshift-multus.toml"
     mode: '0644'
   vars:
     package_name: microshift-multus
     release_info: "{{ multus_release_info }}"
-
-- name: Merge blueprint.toml and /tmp/blueprint.toml
-  ansible.builtin.shell:
-    cmd: "cat /tmp/microshift-multus.toml >> /tmp/merged-blueprint.toml"
-    creates: /tmp/merged-blueprint.toml
