@@ -1,5 +1,5 @@
 - name: Create VM disk from rhel9
-  ansible.builtin.command: 
+  ansible.builtin.command:
     cmd: >
       qemu-img create -f qcow2 -F qcow2 -b
         /var/lib/libvirt/images/{{ vm.builder.cloud_image }}
@@ -12,4 +12,5 @@
   ansible.builtin.file:
     path: /var/lib/libvirt/images/{{ vm.builder.name }}.img
     mode: '0664'
-
+    owner: qemu
+    group: qemu

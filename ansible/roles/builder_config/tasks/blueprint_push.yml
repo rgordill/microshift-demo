@@ -3,7 +3,7 @@
     src: "{{ blueprint_fragments_path }}"
     dest: /tmp/merged-blueprint.toml
     delimiter: "\n"
-    mode: 0644
+    mode: '0644'
 
 - name: Push merged blueprint to osbuild
   ansible.builtin.command:
