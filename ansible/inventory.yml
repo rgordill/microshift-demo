@@ -1,6 +1,9 @@
 ---
 all:
   vars:
+    bootc:
+      image_name: "quay.io/rgordill/microshift-bootc"
+      image_tag: "v4.18.11"
     microshift:
       release: "4.18.11"
       arch: x86_64
@@ -43,7 +46,7 @@ all:
     builder:
       hosts:
         builder:
-          ansible_host: 192.168.122.4
+          ansible_host: 192.168.122.3
           ansible_user: cloud-user
           ansible_ssh_private_key_file: "~/.ssh/id_rsa"
           ansible_ssh_common_args: '-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'

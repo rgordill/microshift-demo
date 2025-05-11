@@ -1,0 +1,69 @@
+- name: Install required packages
+  ansible.builtin.dnf:
+    name:
+      - container-tools
+    state: present
+
+# - name: Create a tmp folder in /tmp
+#   ansible.builtin.tempfile:
+#     state: directory
+#     prefix: bootc.
+#   register:
+#     tmpdir
+
+- name: Set the tmp folder in from the old run
+  ansible.builtin.set_fact:
+    tmpdir:
+      path: "/tmp/bootc.ln4hct2q/"
+
+- name: Change permissions of the tmp folder
+  ansible.builtin.file:
+    path: "{{ tmpdir.path }}"
+    state: directory
+    mode: '0755'
+
+- name: Set containers auth file
+  ansible.builtin.set_fact:
+    authfile: "/root/.config/containers/auth.json"
+# https://github.com/containers/ansible-podman-collections/issues/930
+#    authfile: "/etc/containers/auth.json"
+
+- name: Create folder for auth file if it does not exist
+  ansible.builtin.file:
+    path: "{{ authfile | dirname }}"
+    state: directory
+    mode: '0755'
+
+- name: Copy pull secret that is in pull_secret variable
+  ansible.builtin.copy:
+    content: "{{ pull_secret }}"
+    dest: "{{ authfile }}"
+    mode: '0644'
+
+- name: Create container fragments folder
+  ansible.builtin.file:
+    path: "{{ tmpdir.path }}/container"
+    state: directory
+    mode: '0755'
+  register: container_fragments
+
+- name: Create output folder
+  ansible.builtin.file:
+    path: "{{ tmpdir.path }}/output"
+    state: directory
+    mode: '0755'
+  register: output_folder
+
+- name: Create dnf cache folder
+  ansible.builtin.file:
+    path: "/tmp/rpmmd"
+    state: directory
+    mode: '0755'
+  register: dnf_cache_folder
+
+- name: Create osbuild store folder
+  ansible.builtin.file:
+    path: "/tmp/store"
+    state: directory
+    mode: '0755'
+  register: osbuild_store_folder

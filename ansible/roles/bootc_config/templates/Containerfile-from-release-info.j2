@@ -1,0 +1,10 @@
+{% set version = (release_info.release.base | replace('v', '')) | split('-') | first %}
+
+RUN dnf install -y ${DNF_OPTIONS} {{ package_name }}-{{ version }} && \
+    dnf clean all
+
+{% for key, value in release_info.images.items() %}
+RUN --mount=type=secret,id=pullsecret,dst=/run/secrets/pull-secret.json \
+    podman pull --authfile /run/secrets/pull-secret.json \
+        {{ value }}
+{% endfor %}

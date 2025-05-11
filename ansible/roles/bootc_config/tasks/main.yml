@@ -1,0 +1,16 @@
+- name: Include prerequisites.yml
+  ansible.builtin.include_tasks: prerequisites.yml
+
+- name: Include container_add_microshift.yml
+  ansible.builtin.include_tasks: container_add_microshift.yml
+
+- name: Include container_add_gitops.yml
+  ansible.builtin.include_tasks: container_add_gitops.yml
+  when: gitops.enabled | bool
+
+- name: Include container_add_multus.yml
+  ansible.builtin.include_tasks: container_add_multus.yml
+  when: multus.enabled | bool
+
+- name: Include container_build.yml
+  ansible.builtin.include_tasks: container_build.yml

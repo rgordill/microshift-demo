@@ -1,0 +1,62 @@
+- name: Assemble blueprint fragments
+  ansible.builtin.assemble:
+    src: "{{ container_fragments.path }}"
+    dest: "{{ tmpdir.path }}/Containerfile"
+    delimiter: "\n"
+    mode: '0644'
+
+- name: Build container image using Podman
+  containers.podman.podman_image:
+    name: "{{ bootc.image_name }}"
+    tag: "{{ bootc.image_tag }}"
+    path: "{{ tmpdir.path }}"
+    authfile: "{{ authfile }}"
+    build:
+      format: oci
+      extra_args: "--secret id=pullsecret,src={{ authfile }}"
+
+- name: Send kickstart for builder to /tmp
+  ansible.builtin.template:
+    src: config.toml.j2
+    dest: "{{ tmpdir.path }}/config.toml"
+    mode: '0644'
+
+- name: Check if the image already exists
+  ansible.builtin.stat:
+    path: "{{ output_folder.path }}/bootiso/install.iso"
+  register: image_iso
+
+- name: Run bootc-image-builder using Podman container
+  containers.podman.podman_container:
+    name: bootc-image-builder
+    authfile: "{{ authfile }}"
+    rm: true
+    detach: false
+    interactive: true
+    tty: true
+    privileged: true
+    pull: never
+    security_opt:
+      - label=type:unconfined_t
+    image: "registry.redhat.io/rhel9/bootc-image-builder:latest"
+    volumes:
+      - "/var/lib/containers/storage:/var/lib/containers/storage"
+      - "{{ tmpdir.path }}/config.toml:/config.toml"
+      - "{{ output_folder.path }}:/output"
+      - "{{ dnf_cache_folder.path }}:/rpmmd"
+      - "{{ osbuild_store_folder.path }}:/store"
+    command: "--local --type iso --config /config.toml {{ bootc.image_name }}:{{ bootc.image_tag }}"
+    state: started
+  when: not image_iso.stat.exists
+
+- name: Download the result image
+  ansible.builtin.fetch:
+    src: "{{ output_folder.path }}/bootiso/install.iso"
+    dest: "/tmp/microshift-{{ microshift.release }}-{{ microshift.arch }}-installer.iso"
+    flat: true
+  become: false
+
+# - name: Remove tmp folder
+#   ansible.builtin.file:
+#     path: "{{ tmpdir.path }}"
+#     state: absent

@@ -1,0 +1,50 @@
+ARG RHEL_MAJOR='{{ microshift.os_version.split('.')[0] }}'
+ARG RHEL_VERSION='{{ microshift.os_version }}'
+ARG ARCH='{{ microshift.arch }}'
+
+ARG BASE_IMAGE_URL=registry.redhat.io/rhel${RHEL_MAJOR}-eus/rhel-${RHEL_VERSION}-bootc
+ARG BASE_IMAGE_TAG=${RHEL_VERSION}
+
+FROM "${BASE_IMAGE_URL}:${BASE_IMAGE_TAG}"
+
+ARG RHEL_MAJOR='{{ microshift.os_version.split('.')[0] }}'
+ARG RHEL_VERSION='{{ microshift.os_version }}'
+ARG ARCH='{{ microshift.arch }}'
+ARG USHIFT_VER='{{ microshift.version }}'
+ARG DNF_OPTIONS=""
+
+# Install the required packages for MicroShift
+# and enable the required repositories.
+# The 'fast-datapath' repository is required for the OVN images.
+# The 'rhocp' repository is required for the MicroShift packages.
+RUN dnf config-manager \
+        --set-enabled rhocp-${USHIFT_VER}-for-rhel-${RHEL_MAJOR}-${ARCH}-rpms \
+        --set-enabled fast-datapath-for-rhel-${RHEL_MAJOR}-${ARCH}-rpms
+
+# Do not run 'dnf upgrade' command to avoid overrides of the base
+# images specified by the container image build pipelines.
+RUN dnf install -y ${DNF_OPTIONS} firewalld microshift && \
+    systemctl enable microshift && \
+    dnf clean all
+
+# Mandatory firewall configuration
+RUN firewall-offline-cmd --zone=public --add-port=22/tcp && \
+    firewall-offline-cmd --zone=public --add-port=6443/tcp && \
+    firewall-offline-cmd --zone=trusted --add-source=10.42.0.0/16 && \
+    firewall-offline-cmd --zone=trusted --add-source=169.254.169.1
+
+# Create a systemd unit to recursively make the root filesystem subtree
+# shared as required by OVN images
+# RUN cat > /etc/systemd/system/microshift-make-rshared.service <<'EOF'
+# [Unit]
+# Description=Make root filesystem shared
+# Before=microshift.service
+# ConditionVirtualization=container
+# [Service]
+# Type=oneshot
+# ExecStart=/usr/bin/mount --make-rshared /
+# [Install]
+# WantedBy=multi-user.target
+# EOF
+
+# RUN systemctl enable microshift-make-rshared.service

@@ -1,0 +1,33 @@
+- name: Send GitOps repo to fragments
+  ansible.builtin.template:
+    src: Containerfile-gitops-repo.j2
+    dest: "{{ container_fragments.path }}/01-gitops-repo-Containerfile"
+    mode: '0644'
+
+- name: Enable gitops repo with rhsm_repository module
+  community.general.rhsm_repository:
+    name: "gitops-{{ gitops.version }}-for-rhel-{{ microshift.os_version.split('.')[0] }}-{{ microshift.arch }}-rpms"
+    state: enabled
+
+- name: Install microshift-gitops-release-info
+  ansible.builtin.dnf:
+    name: microshift-gitops-release-info
+    state: present
+
+- name: Read release-gitops.json from target host
+  ansible.builtin.slurp:
+    src: "/usr/share/microshift/release/release-gitops-{{ microshift.arch }}.json"
+  register: gitops_release_info_json
+
+- name: Set fact for release-gitops.json
+  ansible.builtin.set_fact:
+    gitops_release_info: "{{ gitops_release_info_json['content'] | b64decode | from_json }}"
+
+- name: Send GitOps packages to fragments
+  ansible.builtin.template:
+    src: Containerfile-from-release-info.j2
+    dest: "{{ container_fragments.path }}/02-gitops-packages-Containerfile"
+    mode: '0644'
+  vars:
+    package_name: microshift-gitops
+    release_info: "{{ gitops_release_info }}"

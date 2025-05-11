@@ -1,0 +1,27 @@
+- name: Enable rhocp repo with rhsm_repository module
+  community.general.rhsm_repository:
+    name: "rhocp-{{ microshift.version }}-for-rhel-{{ microshift.os_version.split('.')[0] }}-{{ microshift.arch }}-rpms"
+    state: enabled
+
+- name: Install microshift-multus-release-info
+  ansible.builtin.dnf:
+    name: microshift-multus-release-info
+    state: present
+
+- name: Read release-multus.json from target host
+  ansible.builtin.slurp:
+    src: "/usr/share/microshift/release/release-multus-{{ microshift.arch }}.json"
+  register: multus_release_info_json
+
+- name: Set fact for release-multus.json
+  ansible.builtin.set_fact:
+    multus_release_info: "{{ multus_release_info_json['content'] | b64decode | from_json }}"
+
+- name: Send multus packages to fragments
+  ansible.builtin.template:
+    src: Containerfile-from-release-info.j2
+    dest: "{{ container_fragments.path }}/02-multus-packages-Containerfile"
+    mode: '0644'
+  vars:
+    package_name: microshift-multus
+    release_info: "{{ multus_release_info }}"

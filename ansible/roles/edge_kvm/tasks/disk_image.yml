@@ -11,4 +11,6 @@
   ansible.builtin.file:
     path: /var/lib/libvirt/images/{{ vm.edge.name }}.img
     mode: '0664'
+    owner: qemu
+    group: qemu
 

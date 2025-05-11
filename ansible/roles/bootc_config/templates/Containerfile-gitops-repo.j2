@@ -1,0 +1,6 @@
+ARG GITOPS_VER='{{ gitops.version }}'
+
+# Install the required packages for MicroShift gitops
+# and enable the required repositories.
+RUN dnf config-manager \
+        --set-enabled gitops-${GITOPS_VER}-for-rhel-${RHEL_MAJOR}-${ARCH}-rpms
