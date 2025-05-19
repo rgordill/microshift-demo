@@ -1,0 +1,5 @@
+- name: Send Container base to fragments
+  ansible.builtin.template:
+    src: Containerfile.base.j2
+    dest: "{{ container_fragments.path }}/00-base-Containerfile"
+    mode: '0644'

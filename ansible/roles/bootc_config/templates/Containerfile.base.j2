@@ -1,0 +1,27 @@
+ARG RHEL_MAJOR='{{ microshift.os_version.split('.')[0] }}'
+ARG RHEL_VERSION='{{ microshift.os_version }}'
+ARG ARCH='{{ microshift.arch }}'
+
+ARG BASE_IMAGE_URL=registry.redhat.io/rhel${RHEL_MAJOR}-eus/rhel-${RHEL_VERSION}-bootc
+ARG BASE_IMAGE_TAG=${RHEL_VERSION}
+
+FROM "${BASE_IMAGE_URL}:${BASE_IMAGE_TAG}"
+
+# Redefined as before the FROM are not available if not
+ARG RHEL_MAJOR
+ARG RHEL_VERSION
+ARG ARCH
+
+ARG USHIFT_VER='{{ microshift.version }}'
+ARG DNF_OPTIONS=""
+
+RUN dnf install -y ${DNF_OPTIONS} firewalld && \
+    dnf clean all
+
+# Mandatory firewall configuration
+RUN firewall-offline-cmd --zone=public --add-port=22/tcp && \
+    firewall-offline-cmd --zone=public --add-port=6443/tcp && \
+    firewall-offline-cmd --zone=public --add-port=80/tcp && \
+    firewall-offline-cmd --zone=public --add-port=443/tcp && \
+    firewall-offline-cmd --zone=trusted --add-source=10.42.0.0/16 && \
+    firewall-offline-cmd --zone=trusted --add-source=169.254.169.1

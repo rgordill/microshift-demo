@@ -1,0 +1,5 @@
+- name: Send Container final to fragments
+  ansible.builtin.template:
+    src: Containerfile.final.j2
+    dest: "{{ container_fragments.path }}/03-final-Containerfile"
+    mode: '0644'

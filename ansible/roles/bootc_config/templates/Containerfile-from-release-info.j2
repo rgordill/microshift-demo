@@ -1,10 +1,12 @@
 {% set version = (release_info.release.base | replace('v', '')) | split('-') | first %}
 
+# Install package {{ package_name }}-{{ version }}
 RUN dnf install -y ${DNF_OPTIONS} {{ package_name }}-{{ version }} && \
     dnf clean all
 
-{% for key, value in release_info.images.items() %}
+# Adding containers for {{ package_name }}-{{ version }}
 RUN --mount=type=secret,id=pullsecret,dst=/run/secrets/pull-secret.json \
-    podman pull --authfile /run/secrets/pull-secret.json \
-        {{ value }}
+    {% for key, value in release_info.images.items() -%}
+    podman pull --authfile /run/secrets/pull-secret.json {{ value }}{% if not loop.last %} && \    
+    {% endif %}
 {% endfor %}

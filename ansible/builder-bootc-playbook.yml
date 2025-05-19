@@ -9,5 +9,5 @@
   vars_files:
     - vault.yml
   roles:
-    # - role: activation
+    - role: activation
     - role: bootc_config

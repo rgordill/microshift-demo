@@ -1,0 +1,3 @@
+RUN dnf config-manager \
+        --set-enabled rhocp-${USHIFT_VER}-for-rhel-${RHEL_MAJOR}-${ARCH}-rpms \
+        --set-enabled fast-datapath-for-rhel-${RHEL_MAJOR}-${ARCH}-rpms

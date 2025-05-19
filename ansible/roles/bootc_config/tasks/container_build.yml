@@ -35,10 +35,9 @@
     interactive: true
     tty: true
     privileged: true
-    pull: never
     security_opt:
       - label=type:unconfined_t
-    image: "registry.redhat.io/rhel9/bootc-image-builder:latest"
+    image: registry.redhat.io/rhel9/bootc-image-builder:latest
     volumes:
       - "/var/lib/containers/storage:/var/lib/containers/storage"
       - "{{ tmpdir.path }}/config.toml:/config.toml"

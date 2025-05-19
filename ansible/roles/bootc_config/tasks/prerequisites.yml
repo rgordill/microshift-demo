@@ -4,17 +4,17 @@
       - container-tools
     state: present
 
-# - name: Create a tmp folder in /tmp
-#   ansible.builtin.tempfile:
-#     state: directory
-#     prefix: bootc.
-#   register:
-#     tmpdir
+- name: Create a tmp folder in /tmp
+  ansible.builtin.tempfile:
+    state: directory
+    prefix: bootc.
+  register:
+    tmpdir
 
-- name: Set the tmp folder in from the old run
-  ansible.builtin.set_fact:
-    tmpdir:
-      path: "/tmp/bootc.ln4hct2q/"
+# - name: Set the tmp folder in from the old run
+#   ansible.builtin.set_fact:
+#     tmpdir:
+#       path: "/tmp/bootc.yzoz2j_3"
 
 - name: Change permissions of the tmp folder
   ansible.builtin.file:

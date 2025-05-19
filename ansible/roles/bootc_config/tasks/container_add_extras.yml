@@ -1,0 +1,5 @@
+- name: Send Container extras to fragments
+  ansible.builtin.template:
+    src: Containerfile-extra-packages.j2
+    dest: "{{ container_fragments.path }}/02-extra-packages-Containerfile"
+    mode: '0644'

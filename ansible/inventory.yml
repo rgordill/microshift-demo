@@ -1,6 +1,8 @@
 ---
 all:
   vars:
+    include_containers: true
+    luks: true
     bootc:
       image_name: "quay.io/rgordill/microshift-bootc"
       image_tag: "v4.18.11"
@@ -38,7 +40,7 @@ all:
         disk_size: 20G
         lvm_partition: 10G
         network: default
-        ram_size: 4096
+        ram_size: 8192
         vcpu_count: 4
         mac_address: 6c:92:cf:4b:50:92
         os_variant: rhel9

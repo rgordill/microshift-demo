@@ -1,3 +1,4 @@
+{% set wellknown = "clevis" %}
 [customizations.installer.kickstart]
 contents = """
 lang en_US.UTF-8
@@ -18,7 +19,7 @@ reqpart --add-boot
 # Add an LVM volume group and allocate a system root logical volume
 part pv.01 --grow
 volgroup rhel pv.01
-logvol / --vgname=rhel --fstype=xfs --size=10240 --name=root
+logvol / --vgname=rhel --fstype=xfs --size=10240 --name=root {% if luks %} --encrypted --passphrase={{ wellknown }} {% endif %}
 
 # Lock root user account
 rootpw --lock
@@ -32,13 +33,36 @@ network --bootproto=dhcp --activate --onboot=on
 useradd --password '{{ password | password_hash('sha512') }}' --groups wheel redhat
 
 # Set the root password
-echo 'password' | passwd --stdin root
+# echo 'password' | passwd --stdin root
 
 # Create an OpenShift pull secret file
 cat > /etc/crio/openshift-pull-secret <<'EOF'
 {{ pull_secret }}
 EOF
 chmod 600 /etc/crio/openshift-pull-secret
+
+{% if luks %}
+if [ -c /dev/tpm0 ]; then
+echo "Found a TPM chip. Applying full disk encryption..."
+    BLKDS=$(lsblk --noheadings -o NAME,FSTYPE -r | grep crypto_LUKS | cut -d ' ' -f 1)
+    for blkd in ${BLKDS}; do
+    dev="/dev/mapper/$blkd"
+    echo Binding LUKS partition $dev to the TPM pin...
+    if [ "`clevis luks list -d $dev`" == "" ]; then
+      clevis luks bind -f -k - -d $dev tpm2 '{"key":"ecc","pcr_ids":"7","pcr_bank":"sha256"}' <<< "{{ wellknown }}"
+      PASSWORD="{{ wellknown }}" systemd-cryptenroll $dev --tpm2-device=auto --tpm2-pcrs=7
+#      cryptsetup luksRemoveKey $dev <<< "{{ wellknown }}"
+      dracut -fv --regenerate-all
+    else
+      echo "$dev already pinned using clevis"
+    fi
+    done
+else
+    echo "No TPM chip found."
+    echo "!!! Use "{{ wellknown }}" to decrypt your partitions at each boot !!!"
+    echo "TODO: create a no-password token in LUKS"
+fi
+{% endif %}
 
 %end
 """

@@ -2,8 +2,16 @@
   <name>{{ vm.edge.name }}</name>
   <memory unit='KiB'>{{ vm.edge.ram_size * 1024 }}</memory>
   <vcpu>{{ vm.edge.vcpu_count }}</vcpu>
-  <os>
-    <type arch='x86_64' machine='pc'>hvm</type>
+  <os firmware="efi">
+    <type arch="x86_64" machine="pc-q35-8.0">hvm</type>
+    <firmware>
+      <feature enabled="yes" name="enrolled-keys"/>
+      <feature enabled="yes" name="secure-boot"/>
+    </firmware>
+    <!--loader readonly="yes" type="pflash">/usr/share/edk2/ovmf/OVMF_CODE.fd</loader-->
+    <!--nvram template="/usr/share/edk2/ovmf/OVMF_VARS.fd">/var/lib/libvirt/qemu/nvram/{{ vm.edge.name }}.fd</nvram-->
+    <loader readonly="yes" type="pflash" format="qcow2" secure="yes">/usr/share/edk2/ovmf/OVMF_CODE_4M.secboot.qcow2</loader>
+    <nvram format="qcow2" template="/usr/share/edk2/ovmf/OVMF_VARS_4M.secboot.qcow2">/var/lib/libvirt/qemu/nvram/{{ vm.edge.name }}.secboot.fd</nvram>
     <boot dev="hd"/>
     <boot dev="cdrom"/>
     <boot dev="network"/>
@@ -26,6 +34,7 @@
     <disk type='file' device='cdrom'>
       <driver name='qemu' type='raw'/>
       <source file='/var/lib/libvirt/images/{{ vm.edge.iso }}'/>
+      <!--source file='/var/lib/libvirt/images/builder-cidata.iso'/-->
       <target dev='hdd' bus='sata'/>
       <readonly/>
     </disk>
@@ -52,6 +61,16 @@
     </graphics>
     <video>
       <model type="cirrus" vram="16384" heads="1" primary="yes"/>
-    </video> 
+    </video>
+    {% if luks %}
+    <!--tpm model='tpm-tis'>
+      <backend type='passthrough'/>
+      <device path='/dev/tpm0'/>
+    </tpm-->
+    <tpm model='tpm-crb'>
+      <backend type='emulator' version='2.0'/>
+      <alias name='tpm0'/>
+    </tpm>
+    {% endif %}
   </devices>
 </domain>

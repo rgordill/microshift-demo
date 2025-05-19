@@ -1,6 +1,6 @@
 - name: Send GitOps repo to fragments
   ansible.builtin.template:
-    src: Containerfile-gitops-repo.j2
+    src: Containerfile.gitops-repo.j2
     dest: "{{ container_fragments.path }}/01-gitops-repo-Containerfile"
     mode: '0644'
 

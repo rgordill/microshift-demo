@@ -1,0 +1,3 @@
+# Adding extra packages to the container image
+RUN dnf install -y ${DNF_OPTIONS} {% for pkg in microshift.extra_packages %}{{ pkg.name }}{% if pkg.version is defined %}-{{ pkg.version }}{% endif %} {% endfor %} && \
+    dnf clean all

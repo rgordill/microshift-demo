@@ -1,0 +1,20 @@
+- name: Send Luks packages to fragments
+  ansible.builtin.template:
+    src: Containerfile-extra-packages.j2
+    dest: "{{ container_fragments.path }}/02-luks-packages-Containerfile"
+    mode: '0644'
+  vars:
+    microshift:
+      extra_packages:
+        - name: clevis-dracut
+          # version:
+        - name: clevis-luks
+          # version:
+        - name: clevis-systemd
+          # version:
+        - name: tpm2-tools
+          # version:
+        - name: cryptsetup
+          # version:
+        - name: jq
+          # version:
